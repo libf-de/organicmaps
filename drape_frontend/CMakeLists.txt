@@ -100,6 +100,9 @@ set(SRC
   gui/shape.hpp
   gui/skin.cpp
   gui/skin.hpp
+  gui/speed_limit.cpp
+  gui/speed_limit.hpp
+  gui/speed_limit_helper.hpp
   kinetic_scroller.cpp
   kinetic_scroller.hpp
   line_shape.cpp

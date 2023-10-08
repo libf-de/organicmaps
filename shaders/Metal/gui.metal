@@ -13,6 +13,100 @@ typedef struct
   float u_length;
 } Uniforms_T;
 
+// SpeedLimit
+typedef struct
+{
+    float2 a_position [[attribute(0)]];
+    float3 a_color [[attribute(1)]];
+    float3 a_outlineColor [[attribute(2)]];
+    float a_radius [[attribute(3)]];
+    float a_outlineWidthRatio [[attribute(4)]];
+    float a_halfPillHeight [[attribute(5)]];
+    float a_bottomOpacity [[attribute(6)]];
+} SpeedLimitVertex_T;
+
+typedef struct
+{
+    float4 position          [[position]];
+    float2 v_position;
+    float3 v_color;
+    float3 v_outlineColor;
+    float  v_outlineWidthRatio;
+    float  v_halfPillHeight;
+    float  v_bottomOpacity;
+} SpeedLimitFragment_T;
+
+vertex SpeedLimitFragment_T vsSpeedLimitPill(const SpeedLimitVertex_T in [[stage_in]],
+                                         constant Uniforms_T & uniforms [[buffer(2)]])
+{
+    SpeedLimitFragment_T out;
+
+    // Pass-through varyings
+    out.v_position = in.a_position;
+    out.v_color = in.a_color;
+    out.v_outlineColor = in.a_outlineColor;
+    out.v_outlineWidthRatio = in.a_outlineWidthRatio;
+    out.v_halfPillHeight = in.a_halfPillHeight;
+    out.v_bottomOpacity = in.a_bottomOpacity;
+
+    // Compute world position
+    float4 localPos = float4(in.a_position * in.a_radius, 0.0, 1.0);
+    float4 worldPos = uniforms.u_modelView * localPos;
+    out.position = uniforms.u_projection * worldPos;
+
+    return out;
+}
+
+fragment float4 fsSpeedLimitPill(const SpeedLimitFragment_T in [[stage_in]])
+{
+    float R = 1.0;
+    float R2 = R - in.v_outlineWidthRatio;
+
+    float denormHalfPillHeight = in.v_halfPillHeight - 1.0;
+
+    float4 resColor = float4(0.0);
+
+    // Top center (y negative), bottom center (y positive)
+    float2 topCenter = float2(0.0, -denormHalfPillHeight);
+    float2 bottomCenter = float2(0.0, denormHalfPillHeight);
+    float topDist = length(in.v_position - topCenter);
+    float bottomDist = length(in.v_position - bottomCenter);
+
+    bool insidePill = false;
+
+    // Inside top half-circle
+    if (in.v_position.y <= -denormHalfPillHeight && topDist <= R)
+        insidePill = true;
+
+    // Inside bottom half-circle
+    if (in.v_position.y >= denormHalfPillHeight && bottomDist <= R)
+        insidePill = true;
+
+    // Inside central rectangle
+    if (in.v_position.y > -denormHalfPillHeight &&
+        in.v_position.y < denormHalfPillHeight &&
+        fabs(in.v_position.x) <= R)
+        insidePill = true;
+
+    if (insidePill) {
+        resColor = float4(in.v_color, in.v_bottomOpacity);
+    }
+
+    // Top outline
+    if (topDist <= R) {
+        if (topDist >= R2) {
+            float sm = smoothstep(R, R - 0.01, topDist);
+            float sm2 = smoothstep(R2, R2 + 0.01, topDist);
+            float alpha = sm * sm2;
+            resColor = float4(in.v_outlineColor, alpha);
+        } else {
+            resColor = float4(in.v_color, 1.0);
+        }
+    }
+
+    return resColor;
+}
+
 // Ruler
 
 typedef struct

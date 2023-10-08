@@ -94,6 +94,7 @@ public:
 
   struct PrecacheParams
   {
+    dp::Anchor m_anchor;
     std::string m_alphabet;
     size_t m_maxLength;
     dp::FontDecl m_font;

@@ -162,6 +162,7 @@ struct ALIGNMENT GuiProgramParams
     Program::TextStaticOutlinedGui,
     Program::TextOutlinedGui,
     Program::TexturingGui,
+    Program::SpeedLimitPill,
     Program::Ruler)
 };
 

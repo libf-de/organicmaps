@@ -343,7 +343,7 @@ char const *kRenderAltitudeImagesQueueLabel = "mapsme.mwmrouter.renderAltitudeIm
 - (void)updateFollowingInfo {
   if (![MWMRouter isRoutingActive])
     return;
-  auto const &rm = GetFramework().GetRoutingManager();
+  auto &rm = GetFramework().GetRoutingManager();
   routing::FollowingInfo info;
   rm.GetRouteFollowingInfo(info);
   if (!info.IsValid())

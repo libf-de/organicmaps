@@ -143,6 +143,8 @@ public:
         m_currentElement = WIDGET_COMPASS;
       else if (element == "copyright")
         m_currentElement = WIDGET_COPYRIGHT;
+      else if (element == "speedlimit")
+        m_currentElement = WIDGET_SPEED_LIMIT;
       else
       {
         ASSERT(false, ());
@@ -191,7 +193,7 @@ public:
       m_inConfiguration = false;
     }
     else if (element == "ruler" || element == "compass" || element == "copyright" ||
-             element == "country_status")
+             element == "country_status" || element == "speedlimit")
     {
       m_inElement = false;
     }

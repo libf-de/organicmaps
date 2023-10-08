@@ -7,6 +7,7 @@
 #include "drape_frontend/gui/layer_render.hpp"
 #include "drape_frontend/gui/ruler.hpp"
 #include "drape_frontend/gui/ruler_helper.hpp"
+#include "drape_frontend/gui/speed_limit.hpp"
 
 #include "drape_frontend/visual_params.hpp"
 
@@ -52,6 +53,10 @@ void LayerRenderer::Render(ref_ptr<dp::GraphicsContext> context, ref_ptr<gpu::Pr
   {
     if (routingActive && (r.first == gui::WIDGET_COMPASS || r.first == gui::WIDGET_RULER))
       continue;
+#ifndef DEBUG
+     if (!routingActive && r.first == gui::WIDGET_SPEED_LIMIT)
+       continue;
+#endif
 
     r.second->Render(context, mng, screen);
   }
@@ -206,6 +211,7 @@ drape_ptr<LayerRenderer> LayerCacher::RecacheWidgets(ref_ptr<dp::GraphicsContext
       {WIDGET_RULER, std::bind(&LayerCacher::CacheRuler, this, _1, _2, _3, _4)},
       {WIDGET_COPYRIGHT, std::bind(&LayerCacher::CacheCopyright, this, _1, _2, _3, _4)},
       {WIDGET_SCALE_FPS_LABEL, std::bind(&LayerCacher::CacheScaleFpsLabel, this, _1, _2, _3, _4)},
+      {WIDGET_SPEED_LIMIT, std::bind(&LayerCacher::CacheSpeedLimit, this, _1, _2, _3, _4)},
   };
 
   drape_ptr<LayerRenderer> renderer = make_unique_dp<LayerRenderer>();
@@ -383,4 +389,11 @@ void LayerCacher::CacheScaleFpsLabel(ref_ptr<dp::GraphicsContext> context, Posit
 
   renderer->AddShapeRenderer(WIDGET_SCALE_FPS_LABEL, std::move(scaleRenderer));
 }
+
+void LayerCacher::CacheSpeedLimit(ref_ptr<dp::GraphicsContext> context, Position const & position,
+                             ref_ptr<LayerRenderer> renderer, ref_ptr<dp::TextureManager> textures)
+{
+  renderer->AddShapeRenderer(WIDGET_SPEED_LIMIT, SpeedLimit(position).Draw(context, textures));
+}
+
 }  // namespace gui

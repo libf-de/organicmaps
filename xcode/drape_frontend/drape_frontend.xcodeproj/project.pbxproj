@@ -203,6 +203,9 @@
 		BBD8F8791E96A51A00BAEB72 /* drape_hints.hpp in Headers */ = {isa = PBXBuildFile; fileRef = BBD8F8781E96A51A00BAEB72 /* drape_hints.hpp */; };
 		BBD9E2D31F009D9E00DF189A /* user_mark_generator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BBD9E2D11F009D9E00DF189A /* user_mark_generator.cpp */; };
 		BBD9E2D41F009D9E00DF189A /* user_mark_generator.hpp in Headers */ = {isa = PBXBuildFile; fileRef = BBD9E2D21F009D9E00DF189A /* user_mark_generator.hpp */; };
+		CCF711FB2DE75CB7003061AE /* speed_limit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CCF711F92DE75CB7003061AE /* speed_limit.cpp */; };
+		CCF711FC2DE75CB7003061AE /* speed_limit.hpp in Headers */ = {isa = PBXBuildFile; fileRef = CCF711F82DE75CB7003061AE /* speed_limit.hpp */; };
+		CCF711FD2DE75CB7003061AE /* speed_limit_helper.hpp in Headers */ = {isa = PBXBuildFile; fileRef = CCF711FA2DE75CB7003061AE /* speed_limit_helper.hpp */; };
 		EB2B77FF1EEDD418002697B6 /* metaline_manager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EB2B77FD1EEDD418002697B6 /* metaline_manager.cpp */; };
 		EB2B78001EEDD418002697B6 /* metaline_manager.hpp in Headers */ = {isa = PBXBuildFile; fileRef = EB2B77FE1EEDD418002697B6 /* metaline_manager.hpp */; };
 		EB2B78031EEDD439002697B6 /* read_metaline_task.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EB2B78011EEDD439002697B6 /* read_metaline_task.cpp */; };
@@ -414,6 +417,9 @@
 		BBD8F8781E96A51A00BAEB72 /* drape_hints.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = drape_hints.hpp; sourceTree = "<group>"; };
 		BBD9E2D11F009D9E00DF189A /* user_mark_generator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = user_mark_generator.cpp; sourceTree = "<group>"; };
 		BBD9E2D21F009D9E00DF189A /* user_mark_generator.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = user_mark_generator.hpp; sourceTree = "<group>"; };
+		CCF711F82DE75CB7003061AE /* speed_limit.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = speed_limit.hpp; sourceTree = "<group>"; };
+		CCF711F92DE75CB7003061AE /* speed_limit.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = speed_limit.cpp; sourceTree = "<group>"; };
+		CCF711FA2DE75CB7003061AE /* speed_limit_helper.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = speed_limit_helper.hpp; sourceTree = "<group>"; };
 		EB2B77FD1EEDD418002697B6 /* metaline_manager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = metaline_manager.cpp; sourceTree = "<group>"; };
 		EB2B77FE1EEDD418002697B6 /* metaline_manager.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = metaline_manager.hpp; sourceTree = "<group>"; };
 		EB2B78011EEDD439002697B6 /* read_metaline_task.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = read_metaline_task.cpp; sourceTree = "<group>"; };
@@ -678,6 +684,9 @@
 				670948361BDF9C48005014C0 /* shape.hpp */,
 				670948371BDF9C48005014C0 /* skin.cpp */,
 				670948381BDF9C48005014C0 /* skin.hpp */,
+				CCF711F82DE75CB7003061AE /* speed_limit.hpp */,
+				CCF711F92DE75CB7003061AE /* speed_limit.cpp */,
+				CCF711FA2DE75CB7003061AE /* speed_limit_helper.hpp */,
 			);
 			path = gui;
 			sourceTree = "<group>";
@@ -721,6 +730,8 @@
 				670E393D1C46C59000E9C0A6 /* color_constants.hpp in Headers */,
 				34C624C41DABDB0400510300 /* traffic_generator.hpp in Headers */,
 				347F520E1DC2334A0064B273 /* drape_api_builder.hpp in Headers */,
+				CCF711FC2DE75CB7003061AE /* speed_limit.hpp in Headers */,
+				CCF711FD2DE75CB7003061AE /* speed_limit_helper.hpp in Headers */,
 				45D7ADDE2113532700160DE3 /* render_state_extension.hpp in Headers */,
 				6709484E1BDF9C48005014C0 /* shape.hpp in Headers */,
 				452C9EE31CEDCF3200A55E57 /* scale_animation.hpp in Headers */,
@@ -906,6 +917,7 @@
 				BB035F6F1E3A2AAE00519962 /* drape_measurer.cpp in Sources */,
 				670947CC1BDF9BE1005014C0 /* tile_info.cpp in Sources */,
 				34C624C51DABDB0400510300 /* traffic_renderer.cpp in Sources */,
+				CCF711FB2DE75CB7003061AE /* speed_limit.cpp in Sources */,
 				670947961BDF9BE1005014C0 /* line_shape.cpp in Sources */,
 				670947A91BDF9BE1005014C0 /* path_symbol_shape.cpp in Sources */,
 				670947FA1BDF9BF5005014C0 /* backend_renderer.cpp in Sources */,

@@ -564,6 +564,8 @@ void RoutingManager::RemoveRoute(bool deactivateFollowing)
     // Remove all subroutes.
     m_drapeEngine.SafeCall(&df::DrapeEngine::RemoveSubroute,
                            dp::DrapeID(), true /* deactivateFollowing */);
+    m_drapeEngine.SafeCall(&df::DrapeEngine::SetSpeedLimitInfo, -1.f);
+    m_drapeEngine.SafeCall(&df::DrapeEngine::SetCurrentSpeed, 0.f);
   }
   else
   {
@@ -795,6 +797,14 @@ void RoutingManager::CloseRouting(bool removeRoutePoints)
     m_bmManager->GetEditSession().ClearGroup(UserMark::Type::ROUTING);
     CancelRecommendation(Recommendation::RebuildAfterPointsLoading);
   }
+}
+
+void RoutingManager::GetRouteFollowingInfo(routing::FollowingInfo & info)
+{
+  m_routingSession.GetRouteFollowingInfo(info);
+  LOG(LWARNING, ("GetRouteFollowingInfo =", info.m_speedLimitMps));
+  m_drapeEngine.SafeCall(&df::DrapeEngine::SetSpeedLimitInfo, info.m_speedLimitMps);
+  //m_drapeEngine.SafeCall(&df::DrapeEngine::SetSpeedLimitInfo, info.m_c);
 }
 
 void RoutingManager::SetLastUsedRouter(RouterType type)
@@ -1520,6 +1530,8 @@ void RoutingManager::OnExtrapolatedLocationUpdate(location::GpsInfo const & info
   auto routeMatchingInfo = GetRouteMatchingInfo(gpsInfo);
   m_drapeEngine.SafeCall(&df::DrapeEngine::SetGpsInfo, gpsInfo, m_routingSession.IsNavigable(),
                          routeMatchingInfo);
+
+  m_drapeEngine.SafeCall(&df::DrapeEngine::SetCurrentSpeed, gpsInfo.m_speed);
 }
 
 void RoutingManager::DeleteSavedRoutePoints()

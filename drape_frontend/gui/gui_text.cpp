@@ -309,6 +309,29 @@ dp::TGlyphs MutableLabel::GetGlyphs() const
   return glyphs;
 }
 
+void AnalyzeGlyphMetrics(ref_ptr<dp::TextureManager> mng)
+{
+  std::string digits = "0123456789";
+  for (char digit : digits)
+  {
+    // Get metrics for this character
+    dp::TextureManager::TGlyphsBuffer glyphRegions;
+    auto shapedText = mng->ShapeSingleTextLine(dp::kBaseFontSizePixels, std::string(1, digit), &glyphRegions);
+
+    if (!glyphRegions.empty() && !shapedText.m_glyphs.empty())
+    {
+      auto const& glyph = glyphRegions[0];
+      auto const& metrics = shapedText.m_glyphs[0];
+
+      LOG(LINFO, ("Digit:", digit,
+                 "xAdvance:", metrics.m_xAdvance,
+                 "xOffset:", metrics.m_xOffset,
+                 "Width:", glyph.GetPixelSize().x,
+                 "Actual width with offsets:", metrics.m_xAdvance + 2 * metrics.m_xOffset));
+    }
+  }
+}
+
 void MutableLabel::Precache(PrecacheParams const & params, PrecacheResult & result, ref_ptr<dp::TextureManager> mng)
 {
   SetMaxLength(static_cast<uint16_t>(params.m_maxLength));
@@ -368,12 +391,16 @@ void MutableLabel::SetText(LabelResult & result, std::string text, ref_ptr<dp::T
   m_glyphRegions.clear();
   m_shapedText = mng->ShapeSingleTextLine(dp::kBaseFontSizePixels, text, &m_glyphRegions);
 
+
+  //auto fontSize = m_font.m_size * static_cast<float>(df::VisualParams::Instance().GetVisualScale());
+
   // TODO(AB): Reuse pre-calculated width and height?
   // float maxHeight = m_shapedText.m_maxLineHeightInPixels;
   // float length = m_shapedText.m_lineWidthInPixels;
 
   float maxHeight = 0.0f;
-  float length = 0.0f;
+  float minX = std::numeric_limits<float>::max();
+  float maxX = std::numeric_limits<float>::lowest();
   glsl::vec2 pen = glsl::vec2(0.0, 0.0);
 
   ASSERT_EQUAL(m_glyphRegions.size(), m_shapedText.m_glyphs.size(), ());
@@ -387,18 +414,26 @@ void MutableLabel::SetText(LabelResult & result, std::string text, ref_ptr<dp::T
       ASSERT_EQUAL(normals.size(), maskTex.size(), ());
 
       for (size_t i = 0; i < normals.size(); ++i)
-        result.m_buffer.emplace_back(pen + normals[i], maskTex[i]);
+      {
+        auto element = pen + normals[i];
+        result.m_buffer.emplace_back(element, maskTex[i]);
+        minX = std::min(minX, element.x);
+        maxX = std::max(maxX, element.x);
+      }
+
 
       float const advance = metrics.m_xAdvance * m_textRatio;
-      length += advance + offsets.x;
       // TODO(AB): yAdvance is always zero for horizontal layouts.
       pen += glsl::vec2(advance, metrics.m_yAdvance * m_textRatio);
       maxHeight = std::max(maxHeight, offsets.y + glyph.GetPixelHeight() * m_textRatio);
   }
 
-  glsl::vec2 anchorModifier = glsl::vec2(-length / 2.0f, maxHeight / 2.0f);
+  // Then center based on actual width
+  float actualWidth = maxX - minX;
+
+  glsl::vec2 anchorModifier = glsl::vec2(-actualWidth / 2.0f, maxHeight / 2.0f);
   if (m_anchor & dp::Right)
-    anchorModifier.x = -length;
+    anchorModifier.x = -actualWidth;
   else if (m_anchor & dp::Left)
     anchorModifier.x = 0;
 

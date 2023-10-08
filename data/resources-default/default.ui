@@ -1,4 +1,16 @@
 <root>
+  <speedlimit>
+    <portrait>
+      <anchor vertical="center" horizontal="center"/>
+      <relative vertical="center" horizontal="center"/>
+      <offset x="10" y="10"/>
+    </portrait>
+    <landscape>
+      <anchor vertical="center" horizontal="center"/>
+      <relative vertical="center" horizontal="center"/>
+      <offset x="10" y="10"/>
+    </landscape>
+  </speedlimit>
   <ruler>
     <portrait>
       <anchor vertical="bottom" horizontal="left"/>

@@ -2,6 +2,8 @@ package app.organicmaps;
 
 import android.content.Context;
 import android.graphics.Rect;
+import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.Surface;
 
@@ -36,6 +38,7 @@ public final class Map
   public static final int WIDGET_COMPASS = 0x02;
   public static final int WIDGET_COPYRIGHT = 0x04;
   public static final int WIDGET_SCALE_FPS_LABEL = 0x08;
+  public static final int WIDGET_SPEED_LIMIT = 0x10;
 
   // Should correspond to dp::Anchor from drape_global.hpp
   public static final int ANCHOR_CENTER = 0x00;
@@ -147,8 +150,16 @@ public final class Map
     {
       if (sCurrentDpi != surfaceDpi)
       {
+        if(surfaceDpi == 0) {
+          surfaceDpi = context.getResources().getDisplayMetrics().densityDpi;
+          Log.e("DPI CORRECTOR", "Corrected dpi from 0 to " + surfaceDpi);
+        } else {
+          Log.e("DPI CORRECTOR", "DPI SEEMS FINE!" + surfaceDpi);
+        }
         nativeUpdateEngineDpi(surfaceDpi);
         sCurrentDpi = surfaceDpi;
+
+
 
         setupWidgets(context, surfaceFrame.width(), surfaceFrame.height());
       }
@@ -332,13 +343,25 @@ public final class Map
     if (mDisplayType == DisplayType.Device)
     {
       nativeSetupWidget(WIDGET_SCALE_FPS_LABEL, UiUtils.dimen(context, R.dimen.margin_base), UiUtils.dimen(context, R.dimen.margin_base) * 2, ANCHOR_LEFT_TOP);
+      nativeSetupWidget(WIDGET_SPEED_LIMIT, UiUtils.dimen(context, R.dimen.margin_speedlimit) + UiUtils.dimen(context, R.dimen.margin_base), mHeight / 2, ANCHOR_CENTER);
       updateCompassOffset(context, mCurrentCompassOffsetX, mCurrentCompassOffsetY, false);
+      DisplayMetrics dm = context.getResources().getDisplayMetrics();
+      Log.e("DEVICE DPI", "DPI=" + sCurrentDpi + ", WIDTH=" + mWidth + "CD=" + dm.density + "CDPI=" + dm.densityDpi + "DX" + dm.xdpi);
     }
     else
     {
       nativeSetupWidget(WIDGET_SCALE_FPS_LABEL, (float) mWidth / 2 + UiUtils.dimen(context, R.dimen.margin_base) * 2, UiUtils.dimen(context, R.dimen.margin_base), ANCHOR_LEFT_TOP);
+      nativeSetupWidget(WIDGET_SPEED_LIMIT, mWidth - (40 + UiUtils.dimen(context, R.dimen.margin_base)), UiUtils.dimen(context, R.dimen.margin_speedlimit_top) * 3, ANCHOR_CENTER);
       updateCompassOffset(context, mWidth, mCurrentCompassOffsetY, true);
+      DisplayMetrics dm = context.getResources().getDisplayMetrics();
+      Log.e("CURRENT DPI", "DPI=" + sCurrentDpi + ", WIDTH=" + mWidth + "CD=" + dm.density + "CDPI=" + dm.densityDpi + "DX" + dm.xdpi);
     }
+  }
+
+  private int dpToPx(int dp, int dpi)
+  {
+    if(dp == 0) dp = 120;
+    return dp * (dpi / 160);
   }
 
   private void updateRulerOffset(final Context context, int offsetX, int offsetY)
