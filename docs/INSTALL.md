@@ -105,6 +105,7 @@ sudo apt update && sudo apt install -y \
     python3 \
     qt6-base-dev \
     qt6-positioning-dev \
+    libboost1.83-dev \
     libc++-dev \
     libfreetype-dev \
     libglvnd-dev \
