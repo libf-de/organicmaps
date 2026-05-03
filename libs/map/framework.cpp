@@ -2181,7 +2181,7 @@ void Framework::OnTapEvent(place_page::BuildInfo const & buildInfo)
   bool isRoutePoint = placePageInfo.IsRoutePoint();
 
   if (m_routingManager.IsRoutingActive() && m_routingManager.GetCurrentRouterType() == routing::RouterType::Ruler &&
-      !buildInfo.m_isLongTap && !isRoutePoint)
+      buildInfo.m_isLongTap && !isRoutePoint)
   {
     DeactivateMapSelection();
 
@@ -2208,7 +2208,7 @@ void Framework::OnTapEvent(place_page::BuildInfo const & buildInfo)
     return;
   }
 
-  if (buildInfo.m_isLongTap)
+  if (!buildInfo.m_isLongTap)
   {
     SwitchFullScreen();
   }
