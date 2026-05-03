@@ -293,6 +293,13 @@ using Observers = NSHashTable<Observer>;
   [self.audioPlayer play];
 }
 
+- (void)playSpeedingWarningSound
+{
+  if (!self.active)
+    return;
+  [self.audioPlayer play];
+}
+
 - (AVAudioPlayer *)audioPlayer
 {
   if (!_audioPlayer)

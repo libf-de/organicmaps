@@ -17,6 +17,7 @@ import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.os.Build;
 import android.os.IBinder;
+import android.os.SystemClock;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresPermission;
@@ -58,6 +59,8 @@ public class NavigationService extends Service implements LocationListener
   @SuppressWarnings("NotNullFieldNotInitialized")
   @NonNull
   private MediaPlayerWrapper mPlayer;
+
+  private long mLastSpeedingWarnMs = 0;
 
   // Destroyed in onDestroy(). Uses application context to avoid leaking Activity.
   @Nullable
@@ -301,6 +304,9 @@ public class NavigationService extends Service implements LocationListener
     if (routingInfo.shouldPlayWarningSignal())
       mPlayer.playback(R.raw.speed_cams_beep);
 
+    if (shouldPlaySpeedingWarning(routingInfo, location))
+      mPlayer.playback(R.raw.speed_cams_beep);
+
     // Don't spend time on updating RemoteView if notifications are not allowed.
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
         && ActivityCompat.checkSelfPermission(this, POST_NOTIFICATIONS) != PERMISSION_GRANTED)
@@ -331,5 +337,22 @@ public class NavigationService extends Service implements LocationListener
 
     // The notification object must be re-created for every update.
     NotificationManagerCompat.from(this).notify(NOTIFICATION_ID, notificationBuilder.build());
+  }
+
+  private boolean shouldPlaySpeedingWarning(@NonNull RoutingInfo info, @NonNull Location location)
+  {
+    final int toleranceKmh = Framework.nativeGetSpeedLimitWarningToleranceKmh();
+    if (toleranceKmh < 0 || !location.hasSpeed())
+      return false;
+    if (info.speedLimitMps <= 0)
+      return false;
+    final double toleranceMps = toleranceKmh / 3.6;
+    if (location.getSpeed() <= info.speedLimitMps + toleranceMps)
+      return false;
+    final long now = SystemClock.elapsedRealtime();
+    if (now - mLastSpeedingWarnMs < 30_000L)
+      return false;
+    mLastSpeedingWarnMs = now;
+    return true;
   }
 }

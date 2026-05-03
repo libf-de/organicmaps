@@ -23,6 +23,7 @@ import android.location.Location;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.view.KeyEvent;
@@ -177,6 +178,9 @@ public class MwmActivity extends BaseMwmFragmentActivity
 
   private NavigationController mNavigationController;
   private SpeedLimitView mFreeRoamSpeedLimit;
+  @Nullable
+  private app.organicmaps.sdk.sound.MediaPlayerWrapper mSpeedingWarnPlayer;
+  private long mLastFreeRoamSpeedingWarnMs = 0;
 
   private MainMenu mMainMenu;
 
@@ -637,6 +641,7 @@ public class MwmActivity extends BaseMwmFragmentActivity
         new NavigationController(this, v -> onSettingsOptionSelected(), this::updateBottomWidgetsOffset);
     // TrafficManager.INSTANCE.attach(mNavigationController);
     mFreeRoamSpeedLimit = findViewById(R.id.map_free_roam_speed_limit);
+    mSpeedingWarnPlayer = new app.organicmaps.sdk.sound.MediaPlayerWrapper(getApplicationContext());
     ViewCompat.setOnApplyWindowInsetsListener(mFreeRoamSpeedLimit, (view, insets) -> {
       final int statusBarTop = insets.getInsets(WindowInsetsCompat.Type.systemBars()).top;
       final ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) view.getLayoutParams();
@@ -1163,6 +1168,11 @@ public class MwmActivity extends BaseMwmFragmentActivity
   protected void onSafeDestroy()
   {
     super.onSafeDestroy();
+    if (mSpeedingWarnPlayer != null)
+    {
+      mSpeedingWarnPlayer.release();
+      mSpeedingWarnPlayer = null;
+    }
     mLocationPermissionRequest.unregister();
     mLocationPermissionRequest = null;
     mLocationResolutionRequest.unregister();
@@ -1836,7 +1846,7 @@ public class MwmActivity extends BaseMwmFragmentActivity
     final RoutingController routing = RoutingController.get();
     if (!routing.isNavigating())
     {
-      updateFreeRoamSpeedLimit();
+      updateFreeRoamSpeedLimit(location);
       return;
     }
 
@@ -1844,7 +1854,7 @@ public class MwmActivity extends BaseMwmFragmentActivity
     mNavigationController.update(Framework.nativeGetRouteFollowingInfo());
   }
 
-  private void updateFreeRoamSpeedLimit()
+  private void updateFreeRoamSpeedLimit(@NonNull Location location)
   {
     if (Router.get() != Router.Vehicle)
     {
@@ -1860,6 +1870,24 @@ public class MwmActivity extends BaseMwmFragmentActivity
     else
     {
       mFreeRoamSpeedLimit.setVisibility(View.GONE);
+    }
+
+    if (speedLimitMps > 0 && location.hasSpeed() && mSpeedingWarnPlayer != null)
+    {
+      final int toleranceKmh = Framework.nativeGetSpeedLimitWarningToleranceKmh();
+      if (toleranceKmh >= 0)
+      {
+        final double toleranceMps = toleranceKmh / 3.6;
+        if (location.getSpeed() > speedLimitMps + toleranceMps)
+        {
+          final long now = SystemClock.elapsedRealtime();
+          if (now - mLastFreeRoamSpeedingWarnMs >= 30_000L)
+          {
+            mLastFreeRoamSpeedingWarnMs = now;
+            mSpeedingWarnPlayer.playback(app.organicmaps.routing.R.raw.speed_cams_beep);
+          }
+        }
+      }
     }
   }
 

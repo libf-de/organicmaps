@@ -25,6 +25,8 @@ NS_SWIFT_NAME(RoutingManager)
 @property(nonatomic, readonly, nullable) RouteInfo * routeInfo;
 @property(nonatomic, readonly) MWMRouterType type;
 @property(nonatomic) MWMSpeedCameraManagerMode speedCameraMode;
+/// Speed limit warning tolerance in km/h. -1 means the feature is disabled.
+@property(nonatomic) NSInteger speedLimitWarningToleranceKmh;
 
 - (void)addListener:(id<MWMRoutingManagerListener>)listener;
 - (void)removeListener:(id<MWMRoutingManagerListener>)listener;

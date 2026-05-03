@@ -43,6 +43,24 @@
     <item>@string/never_enum_value</item>
   </string-array>
 
+  <string-array name="speed_limit_warning_entries">
+    <item>@string/pref_speed_limit_warning_off</item>
+    <item>@string/pref_speed_limit_warning_0</item>
+    <item>@string/pref_speed_limit_warning_5</item>
+    <item>@string/pref_speed_limit_warning_10</item>
+    <item>@string/pref_speed_limit_warning_15</item>
+    <item>@string/pref_speed_limit_warning_20</item>
+  </string-array>
+
+  <string-array name="speed_limit_warning_values" translatable="false">
+    <item>-1</item>
+    <item>0</item>
+    <item>5</item>
+    <item>10</item>
+    <item>15</item>
+    <item>20</item>
+  </string-array>
+
   <string-array name="mobile_data_options">
     <item>@string/mobile_data_option_ask</item>
     <item>@string/mobile_data_option_always</item>

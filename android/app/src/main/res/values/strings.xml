@@ -648,6 +648,16 @@
     <string name="pref_tts_speedcams_always">Always warn</string>
     <!-- Speed camera settings menu option - Never warn (about speedcams) -->
     <string name="pref_tts_speedcams_never">Never warn</string>
+    <!-- Speed limit warning tolerance setting title -->
+    <string name="pref_speed_limit_warning_title">Speed limit warning</string>
+    <!-- Speed limit warning tolerance entry: off -->
+    <string name="pref_speed_limit_warning_off">Off</string>
+    <!-- Speed limit warning tolerance entries (km/h over the limit) -->
+    <string name="pref_speed_limit_warning_0">At the limit</string>
+    <string name="pref_speed_limit_warning_5">+5 km/h</string>
+    <string name="pref_speed_limit_warning_10">+10 km/h</string>
+    <string name="pref_speed_limit_warning_15">+15 km/h</string>
+    <string name="pref_speed_limit_warning_20">+20 km/h</string>
     <string name="power_managment_title">Power saving mode</string>
     <string name="power_managment_description">Try to reduce power usage at the expense of some functionality.</string>
     <string name="power_managment_setting_never">Never</string>

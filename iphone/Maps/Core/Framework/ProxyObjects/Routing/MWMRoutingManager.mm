@@ -7,6 +7,7 @@
 #import "MWMLocationObserver.h"
 #import "MWMRoutePoint+CPP.h"
 #import "MWMRouter.h"
+#import "MWMTextToSpeech+CPP.h"
 #import "SwiftBridge.h"
 
 #include <CoreApi/Framework.h>
@@ -14,6 +15,9 @@
 NSNotificationName const MWMFreeRoamSpeedLimitNotification = @"MWMFreeRoamSpeedLimitNotification";
 
 @interface MWMRoutingManager () <MWMFrameworkRouteBuilderObserver, MWMLocationObserver>
+{
+  NSTimeInterval _lastFreeRoamSpeedingWarnTime;
+}
 @property(nonatomic, readonly) RoutingManager & rm;
 @property(strong, nonatomic) NSHashTable<id<MWMRoutingManagerListener>> * listeners;
 @end
@@ -220,6 +224,16 @@ NSNotificationName const MWMFreeRoamSpeedLimitNotification = @"MWMFreeRoamSpeedL
   }
 }
 
+- (NSInteger)speedLimitWarningToleranceKmh
+{
+  return static_cast<NSInteger>(GetFramework().GetRoutingManager().GetSpeedLimitWarningToleranceKmh());
+}
+
+- (void)setSpeedLimitWarningToleranceKmh:(NSInteger)kmh
+{
+  GetFramework().GetRoutingManager().SetSpeedLimitWarningToleranceKmh(static_cast<int32_t>(kmh));
+}
+
 - (void)setOnNewTurnCallback:(MWMVoidBlock)callback
 {
   self.rm.RoutingSession().SetOnNewTurnCallback([callback] { callback(); });
@@ -292,6 +306,21 @@ NSNotificationName const MWMFreeRoamSpeedLimitNotification = @"MWMFreeRoamSpeedL
       postNotificationName:MWMFreeRoamSpeedLimitNotification
                     object:nil
                   userInfo:@{@"speedLimitMps" : @(speedLimitMps), @"speedMps" : @(speedMps)}];
+
+  NSInteger const toleranceKmh = self.speedLimitWarningToleranceKmh;
+  if (toleranceKmh >= 0 && speedLimitMps > 0)
+  {
+    double const toleranceMps = toleranceKmh / 3.6;
+    if (speedMps > speedLimitMps + toleranceMps)
+    {
+      NSTimeInterval const now = NSDate.timeIntervalSinceReferenceDate;
+      if (now - _lastFreeRoamSpeedingWarnTime >= 30.0)
+      {
+        _lastFreeRoamSpeedingWarnTime = now;
+        [[MWMTextToSpeech tts] playSpeedingWarningSound];
+      }
+    }
+  }
 }
 
 - (NSString *)turnImageName:(routing::turns::CarDirection)turn isPrimary:(BOOL)isPrimary

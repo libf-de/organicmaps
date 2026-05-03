@@ -1240,6 +1240,16 @@ JNIEXPORT jdouble Java_app_organicmaps_sdk_Framework_nativeGetFreeRoamSpeedLimit
   return static_cast<jdouble>(frm()->GetRoutingManager().GetFreeRoamSpeedLimitMps());
 }
 
+JNIEXPORT jint Java_app_organicmaps_sdk_Framework_nativeGetSpeedLimitWarningToleranceKmh(JNIEnv *, jclass)
+{
+  return static_cast<jint>(frm()->GetRoutingManager().GetSpeedLimitWarningToleranceKmh());
+}
+
+JNIEXPORT void Java_app_organicmaps_sdk_Framework_nativeSetSpeedLimitWarningToleranceKmh(JNIEnv *, jclass, jint kmh)
+{
+  frm()->GetRoutingManager().SetSpeedLimitWarningToleranceKmh(static_cast<int32_t>(kmh));
+}
+
 JNIEXPORT jobjectArray Java_app_organicmaps_sdk_Framework_nativeGetRouteJunctionPoints(JNIEnv * env, jclass,
                                                                                        jdouble maxDistM)
 {

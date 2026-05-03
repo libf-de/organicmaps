@@ -26319,6 +26319,41 @@ vi = Không bao giờ cảnh báo
 zh-Hans = 永远不会对摄像头发出警告
 zh-Hant = 永遠不會對測速照相機發出警告
 
+[pref_speed_limit_warning_title]
+comment = Speed limit warning tolerance setting title
+tags = android-app,apple-maps
+en = Speed limit warning
+
+[pref_speed_limit_warning_off]
+comment = Speed limit warning tolerance option: off
+tags = android-app,apple-maps
+en = Off
+
+[pref_speed_limit_warning_0]
+comment = Speed limit warning tolerance option: at the limit (0 km/h over)
+tags = android-app,apple-maps
+en = At the limit
+
+[pref_speed_limit_warning_5]
+comment = Speed limit warning tolerance option: 5 km/h over the limit
+tags = android-app,apple-maps
+en = +5 km/h
+
+[pref_speed_limit_warning_10]
+comment = Speed limit warning tolerance option: 10 km/h over the limit
+tags = android-app,apple-maps
+en = +10 km/h
+
+[pref_speed_limit_warning_15]
+comment = Speed limit warning tolerance option: 15 km/h over the limit
+tags = android-app,apple-maps
+en = +15 km/h
+
+[pref_speed_limit_warning_20]
+comment = Speed limit warning tolerance option: 20 km/h over the limit
+tags = android-app,apple-maps
+en = +20 km/h
+
 [power_managment_title]
 tags = android-app,apple-maps
 en = Power saving mode

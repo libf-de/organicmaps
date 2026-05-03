@@ -168,6 +168,10 @@ public:
   /// Returns -1.0 if no speed limit info is available.
   double GetFreeRoamSpeedLimitMps() const;
 
+  /// Speed limit warning tolerance setting. Returns -1 if the feature is disabled.
+  int32_t GetSpeedLimitWarningToleranceKmh() const;
+  void SetSpeedLimitWarningToleranceKmh(int32_t kmh);
+
 
   TransitRouteInfo GetTransitRouteInfo() const;
 

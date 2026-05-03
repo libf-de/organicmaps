@@ -31,6 +31,7 @@ using namespace routing;
 @property(nonatomic) BOOL isAPICall;
 @property(nonatomic) BOOL isRestoreProcessCompleted;
 @property(strong, nonatomic) MWMRoutingOptions * routingOptions;
+@property(nonatomic) NSTimeInterval lastSpeedingWarnTime;
 
 + (MWMRouter *)router;
 
@@ -502,9 +503,33 @@ using namespace routing;
   {
     [tts playTurnNotifications:turnNotifications];
     [tts playWarningSound];
+    [self playSpeedingWarningIfNeeded:location tts:tts];
   }
 
   [self updateFollowingInfo];
+}
+
+- (void)playSpeedingWarningIfNeeded:(CLLocation *)location tts:(MWMTextToSpeech *)tts
+{
+  MWMRoutingManager * rm = [MWMRoutingManager routingManager];
+  NSInteger const toleranceKmh = rm.speedLimitWarningToleranceKmh;
+  if (toleranceKmh < 0)
+    return;
+
+  RouteInfo * info = rm.routeInfo;
+  if (!info || info.speedLimitMps <= 0)
+    return;
+
+  double const toleranceMps = toleranceKmh / 3.6;
+  double const speedMps = MAX(0.0, location.speed);
+  if (speedMps <= info.speedLimitMps + toleranceMps)
+    return;
+
+  NSTimeInterval const now = NSDate.timeIntervalSinceReferenceDate;
+  if (now - self.lastSpeedingWarnTime < 30.0)
+    return;
+  self.lastSpeedingWarnTime = now;
+  [tts playSpeedingWarningSound];
 }
 
 #pragma mark - MWMFrameworkRouteBuilderObserver

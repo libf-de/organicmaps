@@ -1,5 +1,6 @@
 #import "MWMTTSSettingsViewController.h"
 #import <AVFoundation/AVFoundation.h>
+#import "MWMRoutingManager.h"
 #import "MWMTextToSpeech+CPP.h"
 #import "SwiftBridge.h"
 #import "TTSTester.h"
@@ -19,6 +20,7 @@ enum class Section
   StreetNames,
   Language,
   SpeedCameras,
+  SpeedLimitWarning,
   Count
 };
 
@@ -224,6 +226,59 @@ struct StreetNamesCellStrategy : BaseCellStategy
 
   NSString * TitleForFooter() const override { return L(@"pref_tts_street_names_description"); }
 };
+
+static NSArray<NSNumber *> * const kSpeedLimitWarningValues = @[@(-1), @(0), @(5), @(10), @(15), @(20)];
+static NSArray<NSString *> * const kSpeedLimitWarningKeys = @[
+  @"pref_speed_limit_warning_off", @"pref_speed_limit_warning_0", @"pref_speed_limit_warning_5",
+  @"pref_speed_limit_warning_10", @"pref_speed_limit_warning_15", @"pref_speed_limit_warning_20"
+];
+
+struct SpeedLimitWarningCellStrategy : BaseCellStategy
+{
+  UITableViewCell * BuildCell(UITableView * tableView, NSIndexPath * indexPath,
+                              MWMTTSSettingsViewController * /* controller */) override
+  {
+    NSInteger const row = indexPath.row;
+    Class cls = [SettingsTableViewSelectableCell class];
+    auto cell = static_cast<SettingsTableViewSelectableCell *>([tableView dequeueReusableCellWithCellClass:cls
+                                                                                                 indexPath:indexPath]);
+    [cell configWithTitle:L(kSpeedLimitWarningKeys[row])];
+    NSInteger const currentTolerance = [MWMRoutingManager routingManager].speedLimitWarningToleranceKmh;
+    BOOL const isSelected = ([kSpeedLimitWarningValues[row] integerValue] == currentTolerance);
+    if (isSelected)
+    {
+      m_selectedCell = cell;
+      cell.accessoryType = UITableViewCellAccessoryCheckmark;
+    }
+    else
+    {
+      cell.accessoryType = UITableViewCellAccessoryNone;
+    }
+    return cell;
+  }
+
+  size_t NumberOfRows(MWMTTSSettingsViewController * /* controller */) const override
+  {
+    return kSpeedLimitWarningValues.count;
+  }
+
+  NSString * TitleForHeader() const override { return L(@"pref_speed_limit_warning_title"); }
+
+  void SelectCell(UITableView * tableView, NSIndexPath * indexPath,
+                  MWMTTSSettingsViewController * /* controller */) override
+  {
+    auto cell = [tableView cellForRowAtIndexPath:indexPath];
+    if (cell == m_selectedCell)
+      return;
+    m_selectedCell.accessoryType = UITableViewCellAccessoryNone;
+    [MWMRoutingManager routingManager].speedLimitWarningToleranceKmh =
+        [kSpeedLimitWarningValues[indexPath.row] integerValue];
+    cell.accessoryType = UITableViewCellAccessoryCheckmark;
+    m_selectedCell = cell;
+  }
+
+  SettingsTableViewSelectableCell * m_selectedCell = nil;
+};
 }  // namespace
 
 @interface MWMTTSSettingsViewController () <SettingsTableViewSwitchCellDelegate>
@@ -249,6 +304,7 @@ struct StreetNamesCellStrategy : BaseCellStategy
     m_strategies.emplace(Underlying(Section::StreetNames), std::make_unique<StreetNamesCellStrategy>());
     m_strategies.emplace(Underlying(Section::Language), std::make_unique<LanguageCellStrategy>());
     m_strategies.emplace(Underlying(Section::SpeedCameras), std::make_unique<CamerasCellStrategy>());
+    m_strategies.emplace(Underlying(Section::SpeedLimitWarning), std::make_unique<SpeedLimitWarningCellStrategy>());
   }
 
   return self;

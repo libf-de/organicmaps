@@ -19,6 +19,7 @@
 
 #include "platform/country_file.hpp"
 #include "platform/platform.hpp"
+#include "platform/settings.hpp"
 
 #include "geometry/algorithm.hpp"
 #include "geometry/mercator.hpp"  // kPointEqualityEps
@@ -1228,6 +1229,23 @@ bool RoutingManager::HasRouteAltitude() const
 double RoutingManager::GetFreeRoamSpeedLimitMps() const
 {
   return m_routingSession.GetFreeRoamSpeedLimitMps();
+}
+
+namespace
+{
+char const kSpeedLimitWarningToleranceKey[] = "SpeedLimitWarningToleranceKmh";
+}  // namespace
+
+int32_t RoutingManager::GetSpeedLimitWarningToleranceKmh() const
+{
+  int32_t v = 5;
+  settings::TryGet(kSpeedLimitWarningToleranceKey, v);
+  return v;
+}
+
+void RoutingManager::SetSpeedLimitWarningToleranceKmh(int32_t kmh)
+{
+  settings::Set(kSpeedLimitWarningToleranceKey, kmh);
 }
 
 bool RoutingManager::GetRouteElevationInfo(ElevationInfo & ei) const

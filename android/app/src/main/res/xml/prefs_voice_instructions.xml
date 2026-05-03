@@ -50,4 +50,11 @@
       android:entries="@array/speed_cameras"
       android:entryValues="@array/speed_cameras_values"
       android:defaultValue="@string/auto_enum_value" />
+  <ListPreference
+      android:key="@string/pref_speed_limit_warning_tolerance"
+      android:title="@string/pref_speed_limit_warning_title"
+      app:singleLineTitle="false"
+      android:entries="@array/speed_limit_warning_entries"
+      android:entryValues="@array/speed_limit_warning_values"
+      android:defaultValue="5" />
 </androidx.preference.PreferenceScreen>
