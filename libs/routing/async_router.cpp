@@ -79,6 +79,13 @@ bool AsyncRouter::FindClosestProjectionToRoad(m2::PointD const & point, m2::Poin
   return m_router->FindClosestProjectionToRoad(point, direction, radius, proj);
 }
 
+Maxspeed AsyncRouter::GetSpeedLimitForEdge(Edge const & edge)
+{
+  if (!m_router)
+    return {};
+  return m_router->GetSpeedLimitForEdge(edge);
+}
+
 void AsyncRouter::RouterDelegateProxy::OnProgress(float progress)
 {
   ProgressCallback onProgress = nullptr;

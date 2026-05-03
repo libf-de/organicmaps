@@ -235,6 +235,7 @@ IndexRouter::IndexRouter(VehicleType vehicleType, bool loadAltitudes,
   : m_vehicleType(vehicleType)
   , m_loadAltitudes(loadAltitudes)
   , m_name("astar-bidirectional-" + ToString(m_vehicleType))
+  , m_outerDataSource(dataSource)
   , m_dataSource(dataSource, numMwmIds)
   , m_vehicleModelFactory(CreateVehicleModelFactory(m_vehicleType, countryParentNameGetterFn))
   , m_countryFileFn(countryFileFn)
@@ -310,6 +311,19 @@ bool IndexRouter::FindClosestProjectionToRoad(m2::PointD const & point, m2::Poin
   }
 
   return true;
+}
+
+Maxspeed IndexRouter::GetSpeedLimitForEdge(Edge const & edge)
+{
+  auto const & featureId = edge.GetFeatureId();
+  std::lock_guard lock(m_maxspeedsMutex);
+  auto it = m_maxspeeds.find(featureId.m_mwmId);
+  if (it == m_maxspeeds.end())
+  {
+    auto handle = m_outerDataSource.GetMwmHandleById(featureId.m_mwmId);
+    it = m_maxspeeds.emplace(featureId.m_mwmId, LoadMaxspeeds(handle)).first;
+  }
+  return it->second->GetMaxspeed(featureId.m_index);
 }
 
 void IndexRouter::SetGuides(GuidesTracks && guides)

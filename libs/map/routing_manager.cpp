@@ -1157,7 +1157,12 @@ void RoutingManager::CallRouteBuilded(RouterResultCode code, storage::CountriesS
 void RoutingManager::MatchLocationToRoute(location::GpsInfo & location, location::RouteMatchingInfo & routeMatchingInfo)
 {
   if (!IsRoutingActive())
+  {
+    // Even without an active route, snap to the nearest road for speed limit display (Vehicle only).
+    if (m_currentRouterType == RouterType::Vehicle)
+      m_routingSession.MatchLocationToRoadGraph(location);
     return;
+  }
 
   bool const matchedToRoute = m_routingSession.MatchLocationToRoute(location, routeMatchingInfo);
 
@@ -1218,6 +1223,11 @@ void RoutingManager::SetDrapeEngine(ref_ptr<df::DrapeEngine> engine, bool is3dAl
 bool RoutingManager::HasRouteAltitude() const
 {
   return m_loadAltitudes && m_routingSession.HasRouteAltitude();
+}
+
+double RoutingManager::GetFreeRoamSpeedLimitMps() const
+{
+  return m_routingSession.GetFreeRoamSpeedLimitMps();
 }
 
 bool RoutingManager::GetRouteElevationInfo(ElevationInfo & ei) const

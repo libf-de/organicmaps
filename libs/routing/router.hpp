@@ -5,6 +5,8 @@
 #include "routing/router_delegate.hpp"
 #include "routing/routing_callbacks.hpp"
 
+#include "routing_common/maxspeed_conversion.hpp"
+
 #include "kml/type_utils.hpp"
 
 #include <functional>
@@ -74,6 +76,10 @@ public:
 
   virtual bool FindClosestProjectionToRoad(m2::PointD const & point, m2::PointD const & direction, double radius,
                                            EdgeProj & proj) = 0;
+
+  /// Returns speed limit for the road edge identified by |edge|.
+  /// Returns an invalid (default-constructed) Maxspeed if not available.
+  virtual Maxspeed GetSpeedLimitForEdge(Edge const &) { return {}; }
 };
 
 }  // namespace routing

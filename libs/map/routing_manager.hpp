@@ -164,6 +164,10 @@ public:
   void FollowRoute();
   void CloseRouting(bool removeRoutePoints);
   void GetRouteFollowingInfo(routing::FollowingInfo & info) const { m_routingSession.GetRouteFollowingInfo(info); }
+  /// Returns speed limit in m/s for the nearest matched road in free-roam mode.
+  /// Returns -1.0 if no speed limit info is available.
+  double GetFreeRoamSpeedLimitMps() const;
+
 
   TransitRouteInfo GetTransitRouteInfo() const;
 

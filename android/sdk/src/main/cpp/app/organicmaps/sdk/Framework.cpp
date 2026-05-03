@@ -1235,6 +1235,11 @@ JNIEXPORT jobject Java_app_organicmaps_sdk_Framework_nativeGetRouteFollowingInfo
   return CreateRoutingInfo(env, info, rm);
 }
 
+JNIEXPORT jdouble Java_app_organicmaps_sdk_Framework_nativeGetFreeRoamSpeedLimitMps(JNIEnv *, jclass)
+{
+  return static_cast<jdouble>(frm()->GetRoutingManager().GetFreeRoamSpeedLimitMps());
+}
+
 JNIEXPORT jobjectArray Java_app_organicmaps_sdk_Framework_nativeGetRouteJunctionPoints(JNIEnv * env, jclass,
                                                                                        jdouble maxDistM)
 {
@@ -1844,6 +1849,8 @@ namespace
 JNINativeMethod const frameworkMethods[] = {
     {"nativeGetRouteFollowingInfo", "()Lapp/organicmaps/sdk/routing/RoutingInfo;",
      reinterpret_cast<void *>(&Java_app_organicmaps_sdk_Framework_nativeGetRouteFollowingInfo)},
+    {"nativeGetFreeRoamSpeedLimitMps", "()D",
+     reinterpret_cast<void *>(&Java_app_organicmaps_sdk_Framework_nativeGetFreeRoamSpeedLimitMps)},
 };
 }
 

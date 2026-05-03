@@ -94,6 +94,10 @@ public:
   // Returns SpeedGroup::Unknown if any trouble happens: position doesn't match with route or something else.
   traffic::SpeedGroup MatchTraffic(location::RouteMatchingInfo const & routeMatchingInfo) const;
 
+  /// Returns the speed limit of the nearest matched road in free-roam mode, in m/s.
+  /// Returns -1.0 when not matched or no data available; 0.0 means unlimited.
+  double GetFreeRoamSpeedLimitMps() const;
+
   void SetUserCurrentPosition(m2::PointD const & position);
 
   void PushPositionAccumulator(m2::PointD const & position);
@@ -185,6 +189,7 @@ private:
 
   EdgeProj m_proj;
   bool m_projectedToRoadGraph = false;
+  double m_freeRoamSpeedLimitMps = -1.0;
 
   /// Current position metrics to check for RouteNeedRebuild state.
   double m_lastDistance = 0.0;

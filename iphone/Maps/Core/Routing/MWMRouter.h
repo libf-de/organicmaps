@@ -74,6 +74,13 @@ typedef NS_ENUM(NSInteger, MWMRoadType) { MWMRoadTypeToll, MWMRoadTypeDirty, MWM
 + (void)showNavigationMapControls;
 + (void)hideNavigationMapControls;
 
+/// Speed limit in m/s for the nearest road in free-roam mode. Returns -1 if unavailable.
++ (double)freeRoamSpeedLimitMps;
+
+/// Posted on every location update with the free-roam speed limit (NSNumber double in userInfo[@"speedLimitMps"]).
+/// speedLimitMps >= 0 means a known limit; 0 means unlimited; < 0 means no data.
+extern NSNotificationName const MWMFreeRoamSpeedLimitNotification;
+
 - (instancetype)init __attribute__((unavailable("call +router instead")));
 - (instancetype)copy __attribute__((unavailable("call +router instead")));
 - (instancetype)copyWithZone:(NSZone *)zone __attribute__((unavailable("call +router instead")));

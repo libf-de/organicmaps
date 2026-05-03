@@ -5,6 +5,8 @@
 #include "platform/measurement_utils.hpp"
 #include "platform/platform.hpp"
 
+#include "routing/road_access.hpp"
+
 #include "geometry/angles.hpp"
 #include "geometry/mercator.hpp"
 
@@ -28,6 +30,19 @@ namespace routing
 {
 using namespace location;
 using namespace traffic;
+
+namespace
+{
+double MaxspeedToMps(Maxspeed const & maxspeed, bool forward)
+{
+  SpeedInUnits const speedLimit = maxspeed.GetCurrentSpeed(GetCurrentTimestamp(), forward);
+  if (speedLimit.IsNumeric())
+    return measurement_utils::KmphToMps(speedLimit.GetSpeedKmPH());
+  if (speedLimit.GetSpeed() == kNoneMaxSpeed)
+    return 0.0;
+  return -1.0;
+}
+}  // namespace
 
 void FormatDistance(double dist, std::string & value, std::string & suffix)
 {
@@ -399,8 +414,9 @@ void RoutingSession::GetRouteFollowingInfo(FollowingInfo & info) const
 
   if (!m_route->IsValid())
   {
-    // nothing should be displayed on the screen about turns if these lines are executed
+    // In free-roam (no active route) still expose speed limit from road-graph snapping.
     info = FollowingInfo();
+    info.m_speedLimitMps = m_freeRoamSpeedLimitMps;
     return;
   }
 
@@ -567,6 +583,9 @@ void RoutingSession::SetRouter(std::unique_ptr<IRouter> && router, std::unique_p
 
 void RoutingSession::MatchLocationToRoadGraph(location::GpsInfo & location)
 {
+  if (!m_router)
+    return;
+
   auto const locationMerc = mercator::FromLatLon(location.m_latitude, location.m_longitude);
   double const radius = m_route->GetCurrentRoutingSettings().m_matchingThresholdM;
 
@@ -580,6 +599,7 @@ void RoutingSession::MatchLocationToRoadGraph(location::GpsInfo & location)
   if (!m_router->FindClosestProjectionToRoad(locationMerc, direction, radius, proj))
   {
     m_projectedToRoadGraph = false;
+    m_freeRoamSpeedLimitMps = -1.0;
     return;
   }
 
@@ -588,6 +608,7 @@ void RoutingSession::MatchLocationToRoadGraph(location::GpsInfo & location)
   {
     m_projectedToRoadGraph = true;
     m_proj = proj;
+    m_freeRoamSpeedLimitMps = MaxspeedToMps(m_router->GetSpeedLimitForEdge(proj.m_edge), proj.m_edge.IsForward());
     return;
   }
 
@@ -601,10 +622,12 @@ void RoutingSession::MatchLocationToRoadGraph(location::GpsInfo & location)
 
     location.m_latitude = mercator::YToLat(proj.m_point.y);
     location.m_longitude = mercator::XToLon(proj.m_point.x);
+    m_freeRoamSpeedLimitMps = MaxspeedToMps(m_router->GetSpeedLimitForEdge(proj.m_edge), proj.m_edge.IsForward());
   }
   else
   {
     m_projectedToRoadGraph = false;
+    m_freeRoamSpeedLimitMps = -1.0;
   }
 
   m_proj = proj;
@@ -620,9 +643,18 @@ bool RoutingSession::MatchLocationToRoute(location::GpsInfo & location, location
 
   bool const matchedToRoute = m_route->MatchLocationToRoute(location, routeMatchingInfo);
   if (matchedToRoute)
+  {
     m_projectedToRoadGraph = false;
+    m_freeRoamSpeedLimitMps = -1.0;
+  }
 
   return matchedToRoute;
+}
+
+double RoutingSession::GetFreeRoamSpeedLimitMps() const
+{
+  CHECK_THREAD_CHECKER(m_threadChecker, ());
+  return m_freeRoamSpeedLimitMps;
 }
 
 traffic::SpeedGroup RoutingSession::MatchTraffic(location::RouteMatchingInfo const & routeMatchingInfo) const

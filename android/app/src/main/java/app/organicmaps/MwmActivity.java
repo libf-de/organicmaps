@@ -109,6 +109,7 @@ import app.organicmaps.sdk.util.Config;
 import app.organicmaps.sdk.util.PowerManagment;
 import app.organicmaps.sdk.util.StringUtils;
 import app.organicmaps.sdk.util.log.Logger;
+import app.organicmaps.sdk.widgets.speedlimit.SpeedLimitView;
 import app.organicmaps.sdk.widget.placepage.PlacePageData;
 import app.organicmaps.search.FloatingSearchToolbarController;
 import app.organicmaps.search.SearchActivity;
@@ -174,6 +175,7 @@ public class MwmActivity extends BaseMwmFragmentActivity
   private RoutingPlanInplaceController mRoutingPlanInplaceController;
 
   private NavigationController mNavigationController;
+  private SpeedLimitView mFreeRoamSpeedLimit;
 
   private MainMenu mMainMenu;
 
@@ -633,6 +635,7 @@ public class MwmActivity extends BaseMwmFragmentActivity
     mNavigationController =
         new NavigationController(this, v -> onSettingsOptionSelected(), this::updateBottomWidgetsOffset);
     // TrafficManager.INSTANCE.attach(mNavigationController);
+    mFreeRoamSpeedLimit = findViewById(R.id.map_free_roam_speed_limit);
 
     initMainMenu();
     initOnmapDownloader();
@@ -1538,6 +1541,8 @@ public class MwmActivity extends BaseMwmFragmentActivity
     // TODO:
     // mPlacePage.refreshViews();
     mNavigationController.show(show);
+    if (show)
+      mFreeRoamSpeedLimit.setVisibility(View.GONE);
     if (mOnmapDownloader != null)
       mOnmapDownloader.updateState(false);
   }
@@ -1822,9 +1827,32 @@ public class MwmActivity extends BaseMwmFragmentActivity
 
     final RoutingController routing = RoutingController.get();
     if (!routing.isNavigating())
+    {
+      updateFreeRoamSpeedLimit();
       return;
+    }
 
+    mFreeRoamSpeedLimit.setVisibility(View.GONE);
     mNavigationController.update(Framework.nativeGetRouteFollowingInfo());
+  }
+
+  private void updateFreeRoamSpeedLimit()
+  {
+    if (Router.get() != Router.Vehicle)
+    {
+      mFreeRoamSpeedLimit.setVisibility(View.GONE);
+      return;
+    }
+    final double speedLimitMps = Framework.nativeGetFreeRoamSpeedLimitMps();
+    if (speedLimitMps >= 0)
+    {
+      mFreeRoamSpeedLimit.setVisibility(View.VISIBLE);
+      mFreeRoamSpeedLimit.setSpeedLimit(StringUtils.nativeFormatSpeed(speedLimitMps), false);
+    }
+    else
+    {
+      mFreeRoamSpeedLimit.setVisibility(View.GONE);
+    }
   }
 
   @Override

@@ -2,6 +2,7 @@
 #import <CoreApi/MWMBookmarksManager.h>
 #import "EAGLView.h"
 #import "MWMAuthorizationCommon.h"
+#import "MWMRouter.h"
 #import "MWMAutoupdateController.h"
 #import "MWMEditorViewController.h"
 #import "MWMFrameworkListener.h"
@@ -23,6 +24,7 @@
 #include "drape_frontend/user_event_stream.hpp"
 
 #include "geometry/mercator.hpp"
+#include "platform/measurement_utils.hpp"
 
 // If you have a "missing header error" here, then please run configure.sh script in the root repo
 // folder.
@@ -83,6 +85,7 @@ NSString * const kSettingsSegue = @"Map2Settings";
 @property(nonatomic, readwrite) MWMMapViewControlsManager * controlsManager;
 @property(nonatomic, readwrite) SearchOnMapManager * searchManager;
 @property(nonatomic, readwrite) TrackRecordingManager * trackRecordingManager;
+@property(nonatomic) UILabel * freeRoamSpeedLimitLabel;
 
 @property(nonatomic) BOOL disableStandbyOnLocationStateMode;
 
@@ -490,6 +493,8 @@ NSString * const kSettingsSegue = @"Map2Settings";
   self.view.clipsToBounds = YES;
   [MWMKeyboard addObserver:self];
 
+  [self setupFreeRoamSpeedLimitLabel];
+
   if ([FirstSession isFirstSession])
   {
     [MWMLocationManager start];
@@ -529,6 +534,54 @@ NSString * const kSettingsSegue = @"Map2Settings";
     }
   }
   */
+}
+
+- (void)setupFreeRoamSpeedLimitLabel
+{
+  UILabel * label = [[UILabel alloc] init];
+  label.translatesAutoresizingMaskIntoConstraints = NO;
+  label.textAlignment = NSTextAlignmentCenter;
+  label.font = [UIFont boldSystemFontOfSize:17];
+  label.textColor = UIColor.blackColor;
+  label.backgroundColor = UIColor.whiteColor;
+  label.layer.cornerRadius = 30;
+  label.layer.masksToBounds = YES;
+  label.layer.borderWidth = 3;
+  label.layer.borderColor = UIColor.redColor.CGColor;
+  label.hidden = YES;
+  [self.view addSubview:label];
+  [NSLayoutConstraint activateConstraints:@[
+    [label.leadingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.leadingAnchor constant:8],
+    [label.topAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor constant:8],
+    [label.widthAnchor constraintEqualToConstant:60],
+    [label.heightAnchor constraintEqualToConstant:60],
+  ]];
+  self.freeRoamSpeedLimitLabel = label;
+
+  [NSNotificationCenter.defaultCenter addObserver:self
+                                         selector:@selector(onFreeRoamSpeedLimitChanged:)
+                                             name:MWMFreeRoamSpeedLimitNotification
+                                           object:nil];
+}
+
+- (void)onFreeRoamSpeedLimitChanged:(NSNotification *)notification
+{
+  double const speedLimitMps = [notification.userInfo[@"speedLimitMps"] doubleValue];
+  if (speedLimitMps < 0)
+  {
+    self.freeRoamSpeedLimitLabel.hidden = YES;
+    return;
+  }
+  self.freeRoamSpeedLimitLabel.hidden = NO;
+  if (speedLimitMps == 0)
+  {
+    self.freeRoamSpeedLimitLabel.text = @"∞";
+  }
+  else
+  {
+    auto const speedKmh = (NSInteger)round(measurement_utils::MpsToKmph(speedLimitMps));
+    self.freeRoamSpeedLimitLabel.text = [NSString stringWithFormat:@"%ld", (long)speedKmh];
+  }
 }
 
 - (void)viewDidAppear:(BOOL)animated

@@ -6,6 +6,7 @@
 
 #include "routing/data_source.hpp"
 #include "routing/directions_engine.hpp"
+#include "routing/maxspeeds.hpp"
 #include "routing/edge_estimator.hpp"
 #include "routing/fake_edges_container.hpp"
 #include "routing/features_road_graph.hpp"
@@ -25,7 +26,9 @@
 #include "geometry/point2d.hpp"
 #include "geometry/tree4d.hpp"
 
+#include <map>
 #include <memory>
+#include <mutex>
 #include <set>
 #include <string>
 #include <vector>
@@ -85,6 +88,8 @@ public:
 
   bool FindClosestProjectionToRoad(m2::PointD const & point, m2::PointD const & direction, double radius,
                                    EdgeProj & proj) override;
+
+  Maxspeed GetSpeedLimitForEdge(Edge const & edge) override;
 
   bool GetBestOutgoingEdges(m2::PointD const & checkpoint, WorldGraph & graph, std::vector<Edge> & edges);
 
@@ -269,7 +274,11 @@ private:
   VehicleType m_vehicleType;
   bool m_loadAltitudes;
   std::string const m_name;
+  DataSource & m_outerDataSource;
   MwmDataSource m_dataSource;
+
+  mutable std::mutex m_maxspeedsMutex;
+  mutable std::map<MwmSet::MwmId, std::unique_ptr<Maxspeeds>> m_maxspeeds;
   std::shared_ptr<VehicleModelFactoryInterface> m_vehicleModelFactory;
 
   TCountryFileFn const m_countryFileFn;

@@ -54,6 +54,8 @@ public:
   bool FindClosestProjectionToRoad(m2::PointD const & point, m2::PointD const & direction, double radius,
                                    EdgeProj & proj);
 
+  Maxspeed GetSpeedLimitForEdge(Edge const & edge);
+
 private:
   /// Worker thread function
   void ThreadFunc();
