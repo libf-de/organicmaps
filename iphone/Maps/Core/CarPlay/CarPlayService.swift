@@ -59,6 +59,10 @@ final class CarPlayService: NSObject {
     router.setupCarPlaySpeedCameraMode()
     self.router = router
     MWMRouter.unsubscribeFromEvents()
+    NotificationCenter.default.addObserver(self,
+                                           selector: #selector(onFreeRoamSpeedLimitChanged(_:)),
+                                           name: Notification.Name(rawValue: "MWMFreeRoamSpeedLimitNotification"),
+                                           object: nil)
     applyRootViewController()
     if let sessionData = router.restoredNavigationSession() {
       applyNavigationRootTemplate(trip: sessionData.0, routeInfo: sessionData.1)
@@ -122,6 +126,9 @@ final class CarPlayService: NSObject {
     router?.removeListener(self)
     router?.unsubscribeFromEvents()
     router?.setupInitialSpeedCameraMode()
+    NotificationCenter.default.removeObserver(self,
+                                              name: Notification.Name(rawValue: "MWMFreeRoamSpeedLimitNotification"),
+                                              object: nil)
     MWMRouter.subscribeToEvents()
     isCarplayActivated = false
     if router?.currentTrip != nil {
@@ -151,6 +158,23 @@ final class CarPlayService: NSObject {
       switchScreenToPhone()
     }
     savedInterfaceController = nil
+  }
+
+  @objc private func onFreeRoamSpeedLimitChanged(_ notification: Notification) {
+    guard let carplayVC = carplayVC else { return }
+    if MWMRouter.isRoutingActive() {
+      // The navigation flow updates the speed widget via didUpdateRouteInfo.
+      return
+    }
+    let userInfo = notification.userInfo
+    let speedLimitMps = (userInfo?["speedLimitMps"] as? Double) ?? -1.0
+    let speedMps = (userInfo?["speedMps"] as? Double) ?? 0.0
+    if speedLimitMps < 0 {
+      carplayVC.hideSpeedControl()
+      return
+    }
+    carplayVC.updateCurrentSpeed(speedMps, speedLimitMps: speedLimitMps)
+    carplayVC.showSpeedControl()
   }
 
   @objc func interfaceStyle() -> UIUserInterfaceStyle {

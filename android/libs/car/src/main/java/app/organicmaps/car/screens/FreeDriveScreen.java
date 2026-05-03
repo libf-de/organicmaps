@@ -1,6 +1,8 @@
 package app.organicmaps.car.screens;
 
+import android.location.Location;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.car.app.CarContext;
 import androidx.car.app.model.Action;
 import androidx.car.app.model.ActionStrip;
@@ -8,14 +10,22 @@ import androidx.car.app.model.CarIcon;
 import androidx.car.app.model.Template;
 import androidx.car.app.navigation.model.NavigationTemplate;
 import androidx.core.graphics.drawable.IconCompat;
+import androidx.lifecycle.LifecycleOwner;
 import app.organicmaps.car.R;
 import app.organicmaps.car.util.UiHelpers;
 import app.organicmaps.sdk.OrganicMaps;
+import app.organicmaps.sdk.Router;
 import app.organicmaps.sdk.car.renderer.Renderer;
 import app.organicmaps.sdk.car.screens.BaseMapScreen;
+import app.organicmaps.sdk.Framework;
+import app.organicmaps.sdk.location.LocationListener;
+import app.organicmaps.sdk.util.StringUtils;
 
 public class FreeDriveScreen extends BaseMapScreen
 {
+  @NonNull
+  private final LocationListener mLocationListener = this::updateSpeedLimit;
+
   public FreeDriveScreen(@NonNull CarContext carContext, @NonNull OrganicMaps organicMapsContext,
                          @NonNull Renderer surfaceRenderer)
   {
@@ -32,6 +42,39 @@ public class FreeDriveScreen extends BaseMapScreen
     builder.setActionStrip(createActionStrip());
 
     return builder.build();
+  }
+
+  @Override
+  public void onCreate(@NonNull LifecycleOwner owner)
+  {
+    super.onCreate(owner);
+    getLocationHelper().addListener(mLocationListener);
+    updateSpeedLimit(/* location */ null);
+  }
+
+  @Override
+  public void onDestroy(@NonNull LifecycleOwner owner)
+  {
+    super.onDestroy(owner);
+    getLocationHelper().removeListener(mLocationListener);
+    getSurfaceRenderer().setSpeedLimit(0, false);
+  }
+
+  private void updateSpeedLimit(@Nullable Location location)
+  {
+    if (Router.get() != Router.Vehicle)
+    {
+      getSurfaceRenderer().setSpeedLimit(0, false);
+      return;
+    }
+    final double speedLimitMps = Framework.nativeGetFreeRoamSpeedLimitMps();
+    if (speedLimitMps < 0)
+    {
+      getSurfaceRenderer().setSpeedLimit(0, false);
+      return;
+    }
+    final boolean alert = location != null && speedLimitMps > 0 && speedLimitMps < location.getSpeed();
+    getSurfaceRenderer().setSpeedLimit(StringUtils.nativeFormatSpeed(speedLimitMps), alert);
   }
 
   @NonNull

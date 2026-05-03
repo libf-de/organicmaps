@@ -24,8 +24,6 @@
 
 using namespace routing;
 
-NSNotificationName const MWMFreeRoamSpeedLimitNotification = @"MWMFreeRoamSpeedLimitNotification";
-
 @interface MWMRouter () <MWMLocationObserver, MWMFrameworkRouteBuilderObserver>
 
 @property(nonatomic) uint32_t routeManagerTransactionId;
@@ -497,29 +495,7 @@ NSNotificationName const MWMFreeRoamSpeedLimitNotification = @"MWMFreeRoamSpeedL
 - (void)onLocationUpdate:(CLLocation *)location
 {
   if (![MWMRouter isRoutingActive])
-  {
-    if ([MWMRouter type] == MWMRouterTypeVehicle)
-    {
-      double const speedLimitMps = [MWMRouter freeRoamSpeedLimitMps];
-      [NSNotificationCenter.defaultCenter
-          postNotificationName:MWMFreeRoamSpeedLimitNotification
-                        object:nil
-                      userInfo:@{@"speedLimitMps" : @(speedLimitMps)}];
-    }
-    else
-    {
-      [NSNotificationCenter.defaultCenter
-          postNotificationName:MWMFreeRoamSpeedLimitNotification
-                        object:nil
-                      userInfo:@{@"speedLimitMps" : @(-1.0)}];
-    }
     return;
-  }
-  // Hide the free-roam speed limit label once navigation becomes active.
-  [NSNotificationCenter.defaultCenter
-      postNotificationName:MWMFreeRoamSpeedLimitNotification
-                    object:nil
-                  userInfo:@{@"speedLimitMps" : @(-1.0)}];
   auto tts = [MWMTextToSpeech tts];
   NSArray<NSString *> * turnNotifications = [MWMRouter turnNotifications];
   if ([MWMRouter isOnRoute] && tts.active)

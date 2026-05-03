@@ -6,9 +6,12 @@
 #import "MWMLocationManager.h"
 #import "MWMLocationObserver.h"
 #import "MWMRoutePoint+CPP.h"
+#import "MWMRouter.h"
 #import "SwiftBridge.h"
 
 #include <CoreApi/Framework.h>
+
+NSNotificationName const MWMFreeRoamSpeedLimitNotification = @"MWMFreeRoamSpeedLimitNotification";
 
 @interface MWMRoutingManager () <MWMFrameworkRouteBuilderObserver, MWMLocationObserver>
 @property(nonatomic, readonly) RoutingManager & rm;
@@ -280,6 +283,15 @@
   NSArray<id<MWMRoutingManagerListener>> * objects = self.listeners.allObjects;
   for (id<MWMRoutingManagerListener> object in objects)
     [object didLocationUpdate:turnNotifications];
+
+  double const speedMps = (location.speed >= 0) ? location.speed : 0.0;
+  double speedLimitMps = -1.0;
+  if (!self.isRoutingActive && self.type == MWMRouterTypeVehicle)
+    speedLimitMps = self.rm.GetFreeRoamSpeedLimitMps();
+  [NSNotificationCenter.defaultCenter
+      postNotificationName:MWMFreeRoamSpeedLimitNotification
+                    object:nil
+                  userInfo:@{@"speedLimitMps" : @(speedLimitMps), @"speedMps" : @(speedMps)}];
 }
 
 - (NSString *)turnImageName:(routing::turns::CarDirection)turn isPrimary:(BOOL)isPrimary
