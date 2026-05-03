@@ -28,6 +28,7 @@ import android.text.method.LinkMovementMethod;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.activity.SystemBarStyle;
@@ -636,6 +637,13 @@ public class MwmActivity extends BaseMwmFragmentActivity
         new NavigationController(this, v -> onSettingsOptionSelected(), this::updateBottomWidgetsOffset);
     // TrafficManager.INSTANCE.attach(mNavigationController);
     mFreeRoamSpeedLimit = findViewById(R.id.map_free_roam_speed_limit);
+    ViewCompat.setOnApplyWindowInsetsListener(mFreeRoamSpeedLimit, (view, insets) -> {
+      final int statusBarTop = insets.getInsets(WindowInsetsCompat.Type.systemBars()).top;
+      final ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) view.getLayoutParams();
+      lp.topMargin = statusBarTop + dimen(this, R.dimen.action_bar_extended_height);
+      view.setLayoutParams(lp);
+      return insets;
+    });
 
     initMainMenu();
     initOnmapDownloader();
