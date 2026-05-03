@@ -94,8 +94,6 @@ abstract class SurfaceCallbackBase implements SurfaceCallback
   public void onClick(float x, float y)
   {
     Logger.d(TAG, "x: " + x + ", y: " + y);
-    // Map taps are intentionally ignored on Android Auto. The AndroidX Car App
-    // SurfaceCallback has no long-press API, so all taps would behave as short
-    // taps and risk accidentally selecting a navigation target while driving.
+    Map.onClick(x, y);
   }
 }
