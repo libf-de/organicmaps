@@ -13,6 +13,9 @@ import androidx.car.app.model.ItemList;
 import androidx.car.app.model.Template;
 import androidx.car.app.navigation.model.MapWithContentTemplate;
 import androidx.core.graphics.drawable.IconCompat;
+import androidx.lifecycle.LifecycleOwner;
+import android.os.Handler;
+import android.os.Looper;
 import app.organicmaps.car.R;
 import app.organicmaps.car.screens.bookmarks.BookmarkCategoriesScreen;
 import app.organicmaps.car.screens.search.SearchScreen;
@@ -22,13 +25,40 @@ import app.organicmaps.car.util.UiHelpers;
 import app.organicmaps.sdk.OrganicMaps;
 import app.organicmaps.sdk.car.renderer.Renderer;
 import app.organicmaps.sdk.car.screens.BaseMapScreen;
+import app.organicmaps.sdk.routing.RoutingController;
 
 public class MapScreen extends BaseMapScreen
 {
+  private static final long FREE_DRIVE_DELAY_MS = 15_000L;
+
+  private final Handler mAutoFreeDriveHandler = new Handler(Looper.getMainLooper());
+  private boolean mAutoFreeDriveDone = false;
+
+  private final Runnable mAutoFreeDriveRunnable = () -> {
+    mAutoFreeDriveDone = true;
+    if (!RoutingController.get().isNavigating())
+      getScreenManager().push(new FreeDriveScreen(getCarContext(), getOrganicMapsContext(), getSurfaceRenderer()));
+  };
+
   public MapScreen(@NonNull CarContext carContext, @NonNull OrganicMaps organicMapsContext,
                    @NonNull Renderer surfaceRenderer)
   {
     super(carContext, organicMapsContext, surfaceRenderer);
+  }
+
+  @Override
+  public void onStart(@NonNull LifecycleOwner owner)
+  {
+    super.onStart(owner);
+    if (!mAutoFreeDriveDone)
+      mAutoFreeDriveHandler.postDelayed(mAutoFreeDriveRunnable, FREE_DRIVE_DELAY_MS);
+  }
+
+  @Override
+  public void onStop(@NonNull LifecycleOwner owner)
+  {
+    super.onStop(owner);
+    mAutoFreeDriveHandler.removeCallbacks(mAutoFreeDriveRunnable);
   }
 
   @NonNull

@@ -42,6 +42,9 @@ final class CarPlayService: NSObject {
   }
 
   var preparedToPreviewTrips: [CPTrip] = []
+
+  private var idleTimer: DispatchWorkItem?
+  private static let freeDriveIdleDelay = 15.0
   private var searchText = ""
 
   @objc func setup(window: CPWindow, interfaceController: CPInterfaceController) {
@@ -116,6 +119,7 @@ final class CarPlayService: NSObject {
   }
 
   private func switchScreenToPhone() {
+    cancelIdleTimer()
     if let carplayVC = carplayVC {
       carplayVC.removeMapView()
     }
@@ -216,9 +220,28 @@ final class CarPlayService: NSObject {
     mapTemplate.tripEstimateStyle = rootTemplateStyle
     interfaceController?.setRootTemplate(mapTemplate, animated: true)
     FrameworkHelper.rotateMap(0.0, animated: false)
+    startIdleTimer()
+  }
+
+  private func startIdleTimer() {
+    idleTimer?.cancel()
+    let item = DispatchWorkItem { [weak self] in self?.returnToFreeRoam() }
+    idleTimer = item
+    DispatchQueue.main.asyncAfter(deadline: .now() + Self.freeDriveIdleDelay, execute: item)
+  }
+
+  private func cancelIdleTimer() {
+    idleTimer?.cancel()
+    idleTimer = nil
+  }
+
+  private func returnToFreeRoam() {
+    guard !RoutingManager.routingManager.isRoutingActive else { return }
+    interfaceController?.popToRootTemplate(animated: true)
   }
 
   private func applyNavigationRootTemplate(trip: CPTrip, routeInfo: RouteInfo) {
+    cancelIdleTimer()
     let mapTemplate = MapTemplateBuilder.buildNavigationTemplate()
     mapTemplate.mapDelegate = self
     interfaceController?.setRootTemplate(mapTemplate, animated: true)
@@ -247,6 +270,7 @@ final class CarPlayService: NSObject {
         break
       }
       interfaceController.pushTemplate(templateToPush, animated: animated)
+      startIdleTimer()
     }
   }
 
@@ -288,6 +312,7 @@ final class CarPlayService: NSObject {
     }
     updateVisibleViewPortState(.default)
     FrameworkHelper.rotateMap(0.0, animated: true)
+    startIdleTimer()
   }
 
   func updateMapTemplateUIToTripFinished(_ trip: CPTrip) {
