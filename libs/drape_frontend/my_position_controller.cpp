@@ -554,7 +554,7 @@ void MyPositionController::OnCompassUpdate(location::CompassInfo const & info, S
 bool MyPositionController::UpdateViewportWithAutoZoom()
 {
   double const autoScale = m_enablePerspectiveInRouting ? m_autoScale3d : m_autoScale2d;
-  if (autoScale > 0.0 && m_mode == location::FollowAndRotate && m_isInRouting && m_enableAutoZoomInRouting &&
+  if (autoScale > 0.0 && m_mode == location::FollowAndRotate && m_enableAutoZoomInRouting &&
       !m_needBlockAutoZoom)
   {
     ChangeModelView(autoScale, m_position, m_drawDirection, GetRoutingRotationPixelCenter());
